@@ -2,6 +2,7 @@ import "./styles.css";
 import { el } from "./dom";
 import { createPlanner, type View } from "./planner";
 import { createMood } from "./mood";
+import { createDataMenu } from "./datamenu";
 
 type TabId = "planner" | "mood";
 
@@ -23,7 +24,7 @@ const header = el("header", { class: "appbar" }, [
   el("h1", { class: "brand" }, ["todo · tracker"]),
   tabbar,
 ]);
-app.append(header, main);
+app.append(header, main, createDataMenu());
 
 let current: View | null = null;
 

@@ -51,6 +51,9 @@ Chrome once served over HTTPS (the Pages deploy) or on localhost for testing.
   view, with date numbers in every box. Click a day to cycle its mood; in the
   Month view it also focuses that day's note. Day + month notes render here too.
 - `src/notes.ts` — independent day/week/month note editor.
+- `src/datamenu.ts` — footer Export/Import: download all data as JSON, or
+  replace it from a backup file. Lets the user move data between devices
+  (there is no backend/sync). Import reuses `store`'s `normalize()`.
 - `src/main.ts` — app shell + top-level tab routing via `location.hash`.
 
 ## Conventions / gotchas

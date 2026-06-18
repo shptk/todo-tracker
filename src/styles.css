@@ -71,8 +71,29 @@ input, textarea { font: inherit; color: inherit; }
 .content {
   max-width: var(--max);
   margin: 0 auto;
-  padding: 12px 20px 64px;
+  padding: 12px 20px 24px;
 }
+
+/* --- Footer (data export/import) ----------------------------------------- */
+
+.footer {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 8px 20px 48px;
+  display: flex;
+  gap: 16px;
+}
+.data-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 13px;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.data-btn:hover { color: var(--ink); }
+.hidden-file { display: none; }
 
 /* --- Nav (date / year stepper) ------------------------------------------ */
 
