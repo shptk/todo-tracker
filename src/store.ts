@@ -54,8 +54,14 @@ class Store {
     return () => this.listeners.delete(fn);
   }
 
-  private commit(): void {
+  /** Persist to localStorage without notifying subscribers. */
+  private write(): void {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
+  }
+
+  /** Persist and notify subscribers so views re-render. */
+  private commit(): void {
+    this.write();
     this.listeners.forEach((fn) => fn());
   }
 
@@ -131,7 +137,9 @@ class Store {
     } else {
       this.data.notes[scope][key] = text;
     }
-    this.commit();
+    // Persist without notifying: the textarea holds its own value, so a
+    // re-render here would only steal focus mid-typing.
+    this.write();
   }
 }
 

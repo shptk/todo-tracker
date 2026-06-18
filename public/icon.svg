@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Full-bleed background so OS masking can shape it (maskable-safe). -->
+  <rect width="512" height="512" fill="#1c1917"/>
+  <!-- Checkmark = the planner. Kept inside the center safe zone. -->
+  <path d="M150 250 L222 322 L362 168"
+        fill="none" stroke="#fafaf9" stroke-width="34"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Three mood dots = the tracker. -->
+  <circle cx="176" cy="372" r="26" fill="#4ade80"/>
+  <circle cx="256" cy="372" r="26" fill="#fbbf24"/>
+  <circle cx="336" cy="372" r="26" fill="#60a5fa"/>
+</svg>

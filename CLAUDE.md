@@ -30,6 +30,16 @@ GitHub Pages **project site** at `https://shptk.github.io/todo-tracker/`.
 `.github/workflows/deploy.yml` builds and deploys on push to `main`.
 Enable Pages → Source: "GitHub Actions" in repo settings once.
 
+## PWA
+
+Installable via `vite-plugin-pwa` (config in `vite.config.ts`): generates the
+web manifest + a Workbox service worker that precaches the static app for
+offline use. `registerType: "autoUpdate"`. Icons live in `public/`
+(`pwa-192x192.png`, `pwa-512x512.png`, `apple-touch-icon.png`, `icon.svg`) and
+are regenerated from `public/icon.svg` with `rsvg-convert`. Installable from
+Chrome once served over HTTPS (the Pages deploy) or on localhost for testing.
+`devOptions.enabled` registers the SW on the dev server too.
+
 ## Layout
 
 - `src/types.ts` — domain model (`Task`, `Mood`, `AppData`).
@@ -37,7 +47,9 @@ Enable Pages → Source: "GitHub Actions" in repo settings once.
 - `src/moods.ts` — fixed mood palette + cycle logic.
 - `src/dates.ts` — local date/week/month key helpers (ISO week, Mon-start).
 - `src/planner.ts` — planner view (day/week/month sub-views). Exports `View`.
-- `src/mood.ts` — mood year view.
+- `src/mood.ts` — mood tracker: Year view (12 mini calendars) + zoomed Month
+  view, with date numbers in every box. Click a day to cycle its mood; in the
+  Month view it also focuses that day's note. Day + month notes render here too.
 - `src/notes.ts` — independent day/week/month note editor.
 - `src/main.ts` — app shell + top-level tab routing via `location.hash`.
 
