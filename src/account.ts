@@ -1,5 +1,21 @@
 import { clear, el } from "./dom";
 import { authState, isConfigured, signIn, signOut, subscribeAuth, type Profile } from "./auth";
+import { subscribeSync, syncStatus, type SyncStatus } from "./sync";
+
+function syncText(s: SyncStatus): string {
+  switch (s) {
+    case "syncing":
+      return "Syncing…";
+    case "synced":
+      return "Synced to your Drive ✓";
+    case "error":
+      return "Sync error — will retry on your next change";
+    case "paused":
+      return "Sign in again to resume sync";
+    default:
+      return "Connected to your Drive";
+  }
+}
 
 function avatarEl(profile: Profile, size: number): HTMLElement {
   if (profile.picture) {
@@ -24,8 +40,11 @@ function openModal(): void {
   const card = el("div", { class: "modal-card" });
   const overlay = el("div", { class: "modal-overlay" }, [card]);
 
+  let unsubAuth = () => {};
+  let unsubSync = () => {};
   const close = () => {
-    unsub();
+    unsubAuth();
+    unsubSync();
     overlay.remove();
   };
   overlay.addEventListener("click", (e) => {
@@ -65,6 +84,7 @@ function openModal(): void {
         el("p", { class: "hint modal-hint" }, [
           "Your planner, moods, and notes sync to your own Google Drive. Your data stays in your Drive — it's never sent to us or stored on any server.",
         ]),
+        el("p", { class: "sync-status" }, [syncText(syncStatus())]),
         el("button", { class: "btn-primary", onClick: () => void signOut() }, ["Sign out"]),
       );
       return;
@@ -85,7 +105,11 @@ function openModal(): void {
     );
   }
 
-  const unsub = subscribeAuth(render);
+  unsubAuth = subscribeAuth(render);
+  unsubSync = subscribeSync(() => {
+    const n = card.querySelector(".sync-status");
+    if (n) n.textContent = syncText(syncStatus());
+  });
   render();
   document.body.append(overlay);
 }

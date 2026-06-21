@@ -6,6 +6,7 @@ const CURRENT_VERSION = 1;
 function emptyData(): AppData {
   return {
     version: CURRENT_VERSION,
+    updatedAt: 0,
     tasks: [],
     trackers: { mood: {} },
     notes: { day: {}, week: {}, month: {} },
@@ -20,6 +21,7 @@ function normalize(parsed: Partial<AppData> | null | undefined): AppData {
   if (!parsed || typeof parsed !== "object") return base;
   return {
     version: CURRENT_VERSION,
+    updatedAt: typeof parsed.updatedAt === "number" ? parsed.updatedAt : base.updatedAt,
     tasks: Array.isArray(parsed.tasks) ? parsed.tasks : base.tasks,
     trackers: { mood: parsed.trackers?.mood ?? base.trackers.mood },
     notes: {
@@ -60,14 +62,40 @@ class Store {
     return () => this.listeners.delete(fn);
   }
 
-  /** Persist to localStorage without notifying subscribers. */
-  private write(): void {
+  /** Persist to localStorage without notifying subscribers. `stamp` bumps the
+   *  updatedAt clock (skipped when applying a remote copy during sync). */
+  private write(stamp = true): void {
+    if (stamp) this.data.updatedAt = Date.now();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(this.data));
   }
 
   /** Persist and notify subscribers so views re-render. */
   private commit(): void {
     this.write();
+    this.listeners.forEach((fn) => fn());
+  }
+
+  // --- Sync support (Drive) ------------------------------------------------
+
+  /** A deep copy of all data, for uploading to Drive. */
+  exportData(): AppData {
+    return structuredClone(this.data);
+  }
+
+  dataUpdatedAt(): number {
+    return this.data.updatedAt ?? 0;
+  }
+
+  /**
+   * Replace all data from a synced remote copy. Preserves the remote's
+   * updatedAt (no restamp) so it doesn't immediately look newer and push back,
+   * and notifies subscribers so views refresh.
+   */
+  applyRemote(data: AppData): void {
+    const norm = normalize(data);
+    norm.updatedAt = typeof data.updatedAt === "number" ? data.updatedAt : Date.now();
+    this.data = norm;
+    this.write(false);
     this.listeners.forEach((fn) => fn());
   }
 

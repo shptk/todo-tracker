@@ -5,6 +5,7 @@ import { createMood } from "./mood";
 import { createNotebook } from "./notebook";
 import { applySavedTheme, createThemeToggle } from "./theme";
 import { createAccountButton } from "./account";
+import { initSync } from "./sync";
 
 type TabId = "planner" | "mood" | "notes";
 
@@ -62,3 +63,6 @@ for (const tab of TABS) {
 
 window.addEventListener("hashchange", () => mount(readTab()));
 mount(readTab());
+
+// Start Google Drive sync (no-op unless signed in).
+initSync();

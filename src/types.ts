@@ -50,6 +50,8 @@ export interface Note {
 
 export interface AppData {
   version: number;
+  /** Epoch ms of the last local mutation — used for last-write-wins Drive sync. */
+  updatedAt: number;
   tasks: Task[];
   /**
    * The mood tracker. Keyed by ISO date (YYYY-MM-DD) -> mood key.

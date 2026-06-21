@@ -5,7 +5,7 @@
 // console → APIs & Services → Credentials) and is PUBLIC — safe to commit.
 // Authorized JavaScript origins must include http://localhost:5173 (dev) and
 // your deployed origin. Until this is set, the UI shows a "not configured" note.
-const CLIENT_ID = "";
+const CLIENT_ID: string = "154320784701-fh1mvscaqdvttp1a0kk091uisa5m83eb.apps.googleusercontent.com";
 
 // drive.file = per-file access (non-sensitive); openid/email/profile to show who
 // is signed in. The app can only ever touch files it creates in the user's Drive.
@@ -147,12 +147,16 @@ export async function signOut(): Promise<void> {
   set({ status: "signed-out", profile: null });
 }
 
-/** Current access token for Drive calls (used by the upcoming sync layer). */
-export async function getToken(): Promise<string | null> {
+/**
+ * Current access token for Drive calls. `interactive=false` (default) refreshes
+ * silently (prompt=none) and returns null if a popup would be needed — so the
+ * sync layer never triggers a surprise sign-in window on load.
+ */
+export async function getToken(interactive = false): Promise<string | null> {
   if (!isConfigured()) return null;
   if (accessToken && Date.now() < tokenExpiry) return accessToken;
   try {
-    return await requestToken("");
+    return await requestToken(interactive ? undefined : "none");
   } catch {
     return null;
   }

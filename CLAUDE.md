@@ -10,8 +10,10 @@ frameworks, or feature bloat.
 - **Vanilla TypeScript + Vite.** No UI framework. DOM is built with the tiny
   helper in `src/dom.ts` (`el()` / `clear()`).
 - **State:** a single `Store` (`src/store.ts`) over `localStorage` (key
-  `todo-tracker:v1`). Single-device, no backend, no accounts. Views subscribe
-  to the store and re-render on change.
+  `todo-tracker:v1`). Views subscribe to the store and re-render on change.
+  localStorage is the offline source of truth; optional Google Drive sync
+  (`src/sync.ts`) layers cross-device sync on top when signed in (no backend —
+  each user's data lives in their own Drive).
 
 ## Commands
 
@@ -74,6 +76,9 @@ Chrome once served over HTTPS (the Pages deploy) or on localhost for testing.
   the UI shows a "not configured" note. Exposes `getToken()` for the (upcoming)
   Drive sync layer.
 - `src/account.ts` — header account button + login modal (the "login page").
+- `src/sync.ts` — Google Drive sync: finds/creates `todo-tracker.json` in the
+  user's Drive, pulls on sign-in/load, pushes (debounced) on change. Whole-doc
+  last-write-wins by `AppData.updatedAt`. Surfaces a `SyncStatus`.
 - `src/main.ts` — app shell + top-level tab routing via `location.hash`.
 
 ## Conventions / gotchas

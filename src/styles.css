@@ -216,6 +216,7 @@ input, textarea { font: inherit; color: inherit; }
 .acct .avatar { width: 56px; height: 56px; }
 .acct-name { font-weight: 600; font-size: 16px; }
 .acct-email { color: var(--muted); font-size: 13px; }
+.sync-status { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
 
 .content {
   max-width: var(--max);
