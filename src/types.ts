@@ -24,6 +24,8 @@ export interface Task {
   /** The day this task is planned for, as an ISO date key (YYYY-MM-DD). */
   date: string;
   createdAt: number;
+  /** Optional longer description / notes for the task. */
+  desc?: string;
 }
 
 /**
@@ -33,6 +35,18 @@ export interface Task {
  *   month -> keyed by YYYY-MM
  */
 export type NoteScope = "day" | "week" | "month";
+
+/**
+ * A standalone titled note in the notetaker (distinct from the date-scoped
+ * `notes` above). Free-form; the user can create any number of them.
+ */
+export interface Note {
+  id: string;
+  title: string;
+  body: string;
+  createdAt: number;
+  updatedAt: number;
+}
 
 export interface AppData {
   version: number;
@@ -50,4 +64,6 @@ export interface AppData {
     week: Record<string, string>;
     month: Record<string, string>;
   };
+  /** The notetaker: a flat list of standalone titled notes. */
+  notebook: Note[];
 }

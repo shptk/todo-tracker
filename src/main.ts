@@ -2,29 +2,36 @@ import "./styles.css";
 import { el } from "./dom";
 import { createPlanner, type View } from "./planner";
 import { createMood } from "./mood";
-import { createDataMenu } from "./datamenu";
+import { createNotebook } from "./notebook";
+import { applySavedTheme, createThemeToggle } from "./theme";
+import { createAccountButton } from "./account";
 
-type TabId = "planner" | "mood";
+type TabId = "planner" | "mood" | "notes";
 
 const TABS: { id: TabId; label: string; create: () => View }[] = [
   { id: "planner", label: "Planner", create: createPlanner },
   { id: "mood", label: "Mood", create: createMood },
+  { id: "notes", label: "Notes", create: createNotebook },
 ];
 
 function readTab(): TabId {
   const h = location.hash.replace("#", "");
-  return h === "mood" ? "mood" : "planner";
+  return (TABS.some((t) => t.id === h) ? h : "planner") as TabId;
 }
+
+applySavedTheme();
 
 const app = document.getElementById("app")!;
 
+// The header shows the active feature's name, not the app name.
+const title = el("h1", { class: "brand" }, [""]);
 const tabbar = el("nav", { class: "tabbar" });
 const main = el("main", { class: "content" });
 const header = el("header", { class: "appbar" }, [
-  el("h1", { class: "brand" }, ["todo · tracker"]),
-  tabbar,
+  title,
+  el("div", { class: "appbar-right" }, [tabbar, createAccountButton(), createThemeToggle()]),
 ]);
-app.append(header, main, createDataMenu());
+app.append(header, main);
 
 let current: View | null = null;
 
@@ -32,6 +39,7 @@ function mount(id: TabId): void {
   current?.destroy();
   main.replaceChildren();
   const tab = TABS.find((t) => t.id === id)!;
+  title.textContent = tab.label;
   current = tab.create();
   main.append(current.el);
 

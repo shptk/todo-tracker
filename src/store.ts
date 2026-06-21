@@ -1,4 +1,4 @@
-import type { AppData, MoodKey, NoteScope, Task } from "./types";
+import type { AppData, MoodKey, Note, NoteScope, Task } from "./types";
 
 const STORAGE_KEY = "todo-tracker:v1";
 const CURRENT_VERSION = 1;
@@ -9,6 +9,7 @@ function emptyData(): AppData {
     tasks: [],
     trackers: { mood: {} },
     notes: { day: {}, week: {}, month: {} },
+    notebook: [],
   };
 }
 
@@ -26,6 +27,7 @@ function normalize(parsed: Partial<AppData> | null | undefined): AppData {
       week: parsed.notes?.week ?? base.notes.week,
       month: parsed.notes?.month ?? base.notes.month,
     },
+    notebook: Array.isArray(parsed.notebook) ? parsed.notebook : base.notebook,
   };
 }
 
@@ -114,6 +116,19 @@ class Store {
     this.commit();
   }
 
+  /**
+   * Set or clear a task's optional description. Persists WITHOUT notifying —
+   * the textarea holds its own value, so a re-render would steal focus while
+   * typing (same rationale as setNote/updateNote).
+   */
+  setTaskDesc(id: string, desc: string): void {
+    const t = this.data.tasks.find((x) => x.id === id);
+    if (!t) return;
+    if (desc.trim() === "") delete t.desc;
+    else t.desc = desc;
+    this.write();
+  }
+
   // --- Mood tracker --------------------------------------------------------
 
   mood(key: string): MoodKey | undefined {
@@ -144,6 +159,45 @@ class Store {
     // Persist without notifying: the textarea holds its own value, so a
     // re-render here would only steal focus mid-typing.
     this.write();
+  }
+
+  // --- Notetaker (standalone titled notes) --------------------------------
+
+  /** All notebook notes, most recently updated first. */
+  allNotes(): Note[] {
+    return [...this.data.notebook].sort((a, b) => b.updatedAt - a.updatedAt);
+  }
+
+  getNote(id: string): Note | undefined {
+    return this.data.notebook.find((n) => n.id === id);
+  }
+
+  /** Create a new empty note and return it (notifies). */
+  addNote(): Note {
+    const now = Date.now();
+    const note: Note = { id: newId(), title: "", body: "", createdAt: now, updatedAt: now };
+    this.data.notebook.push(note);
+    this.commit();
+    return note;
+  }
+
+  /**
+   * Patch a note's title and/or body. Persists WITHOUT notifying — the inputs
+   * hold their own value, so a re-render here would steal focus mid-typing
+   * (same rationale as setNote).
+   */
+  updateNote(id: string, patch: { title?: string; body?: string }): void {
+    const n = this.data.notebook.find((x) => x.id === id);
+    if (!n) return;
+    if (patch.title !== undefined) n.title = patch.title;
+    if (patch.body !== undefined) n.body = patch.body;
+    n.updatedAt = Date.now();
+    this.write();
+  }
+
+  deleteNote(id: string): void {
+    this.data.notebook = this.data.notebook.filter((n) => n.id !== id);
+    this.commit();
   }
 
   // --- Backup (export / import) -------------------------------------------

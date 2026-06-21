@@ -62,6 +62,18 @@ Chrome once served over HTTPS (the Pages deploy) or on localhost for testing.
 - `src/datamenu.ts` — footer Export/Import: download all data as JSON, or
   replace it from a backup file. Lets the user move data between devices
   (there is no backend/sync). Import reuses `store`'s `normalize()`.
+- `src/notebook.ts` — notetaker: a flat list of standalone titled notes
+  (`AppData.notebook: Note[]`), separate from the date-scoped notes. List /
+  rendered-read / Markdown-edit modes; task checkboxes are clickable.
+- `src/markdown.ts` — tiny zero-dependency Markdown renderer + task-checkbox
+  toggle. HTML-escapes all input. Supports headings, bold/italic, code,
+  bullet/ordered/task lists, quotes, rules, links. No dependency by design.
+- `src/auth.ts` — Google sign-in via Google Identity Services (OAuth token flow,
+  `drive.file` scope). Local-first/optional: app works signed-out. Paste the
+  public OAuth **Client ID** at the top (`CLIENT_ID`) to enable it; until then
+  the UI shows a "not configured" note. Exposes `getToken()` for the (upcoming)
+  Drive sync layer.
+- `src/account.ts` — header account button + login modal (the "login page").
 - `src/main.ts` — app shell + top-level tab routing via `location.hash`.
 
 ## Conventions / gotchas

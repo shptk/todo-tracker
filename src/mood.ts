@@ -1,6 +1,6 @@
 import { clear, el } from "./dom";
 import { store } from "./store";
-import { moodOf, nextMood } from "./moods";
+import { MOODS, moodOf, nextMood } from "./moods";
 import { noteEditor } from "./notes";
 import { dayKey, dayLabel, isSameDay, monthKey, monthName, today } from "./dates";
 import type { View } from "./planner";
@@ -146,7 +146,19 @@ export function createMood(): View {
         : "Click a day to cycle its mood and open its note below.",
     ]);
 
-    header.append(toggle, nav, hint);
+    // Color tray: what each mood color means.
+    const legend = el(
+      "div",
+      { class: "legend" },
+      MOODS.map((m) =>
+        el("span", { class: "legend-item" }, [
+          el("span", { class: "legend-swatch", style: `background:${m.color}` }),
+          m.label,
+        ]),
+      ),
+    );
+
+    header.append(toggle, nav, hint, legend);
     if (mode === "year") renderYear();
     else renderMonth();
   }

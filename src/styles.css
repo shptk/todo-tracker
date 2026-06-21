@@ -20,7 +20,29 @@
     --muted: #a8a29e;
     --line: #44403c;
     --accent: #f5f5f4;
+    color-scheme: dark;
   }
+}
+
+/* Manual theme (header toggle) overrides the system media query above.
+   With no data-theme attribute, the OS preference applies. */
+:root[data-theme="light"] {
+  --bg: #fafaf9;
+  --surface: #ffffff;
+  --ink: #1c1917;
+  --muted: #78716c;
+  --line: #e7e5e4;
+  --accent: #1c1917;
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  --bg: #1c1917;
+  --surface: #292524;
+  --ink: #f5f5f4;
+  --muted: #a8a29e;
+  --line: #44403c;
+  --accent: #f5f5f4;
+  color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
@@ -68,6 +90,133 @@ input, textarea { font: inherit; color: inherit; }
 .tab:hover { color: var(--ink); }
 .tab.active { background: var(--accent); color: var(--bg); }
 
+.appbar-right { display: flex; align-items: center; gap: 8px; }
+.theme-toggle {
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  border-radius: 999px;
+  width: 32px;
+  height: 32px;
+  font-size: 15px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.theme-toggle:hover { border-color: var(--muted); }
+
+/* --- Account button + login modal --------------------------------------- */
+
+.account-btn {
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 13px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+}
+.account-btn:hover { border-color: var(--muted); }
+.account-btn.signed-in { padding: 2px; border-color: transparent; }
+
+.avatar { border-radius: 999px; object-fit: cover; display: inline-block; }
+.avatar-initial {
+  background: var(--accent);
+  color: var(--bg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 100;
+}
+.modal-card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 28px 24px 24px;
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 22px;
+  line-height: 1;
+}
+.modal-close:hover { color: var(--ink); }
+.modal-title { margin: 0 0 10px; font-size: 20px; }
+.modal-hint { margin: 0 auto 18px; max-width: 320px; }
+.modal-note {
+  color: var(--muted);
+  font-size: 13px;
+  background: var(--line);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  margin: 0 0 16px;
+}
+.modal-error { color: #ef4444; font-size: 13px; margin: 8px 0 0; min-height: 1em; }
+
+.btn-google-wrap { margin-bottom: 14px; }
+.btn-google {
+  width: 100%;
+  background: #fff;
+  color: #1f1f1f;
+  border: 1px solid #dadce0;
+  border-radius: var(--radius);
+  padding: 11px 14px;
+  font-size: 15px;
+  font-weight: 500;
+}
+.btn-google:hover { background: #f7f8f8; }
+.btn-google:disabled { opacity: 0.6; }
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: var(--radius);
+  padding: 10px 18px;
+  font-size: 14px;
+}
+.btn-primary:hover { opacity: 0.9; }
+.btn-ghost {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 14px;
+  padding: 4px 8px;
+}
+.btn-ghost:hover { color: var(--ink); }
+
+.acct { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-bottom: 14px; }
+.acct .avatar { width: 56px; height: 56px; }
+.acct-name { font-weight: 600; font-size: 16px; }
+.acct-email { color: var(--muted); font-size: 13px; }
+
 .content {
   max-width: var(--max);
   margin: 0 auto;
@@ -94,6 +243,9 @@ input, textarea { font: inherit; color: inherit; }
 }
 .data-btn:hover { color: var(--ink); }
 .hidden-file { display: none; }
+/* The data menu now lives inside the notetaker list, which already has page
+   padding, so drop the footer's own horizontal padding to keep it aligned. */
+.notebook .footer { padding: 24px 0 8px; }
 
 /* --- Nav (date / year stepper) ------------------------------------------ */
 
@@ -140,12 +292,44 @@ input, textarea { font: inherit; color: inherit; }
 
 .task {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
   padding: 6px 4px;
   border-bottom: 1px solid var(--line);
 }
 .task:last-child { border-bottom: none; }
+/* The whole bar is clickable to expand the description. */
+.task-row { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+
+/* The add-task form is layout-transparent so the input flows as before. */
+.task-add-form { display: contents; }
+
+.task-expand {
+  display: inline-block;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1;
+  padding: 0 2px;
+  opacity: 0.6;
+  user-select: none;
+  transition: transform 0.12s, opacity 0.12s, color 0.12s;
+}
+.task:hover .task-expand { opacity: 1; }
+.task-expand.has-desc { opacity: 1; color: var(--ink); }
+.task-expand.open { transform: rotate(90deg); }
+
+.task-desc-wrap { padding: 6px 0 4px 26px; }
+.task-desc {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+}
+.task-desc:focus { border-color: var(--muted); }
 
 .task-check { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
 .task-text { flex: 1; }
@@ -253,6 +437,17 @@ input, textarea { font: inherit; color: inherit; }
 .mood-header .subtabs { margin-bottom: 4px; }
 .hint { color: var(--muted); font-size: 13px; margin: 8px 0 0; }
 
+/* Color tray — mood legend */
+.legend { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 10px; }
+.legend-item { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.legend-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  flex: none;
+}
+
 /* Date numbers shown inside every mood box. Mood fills are light colors, so a
    filled box uses dark text regardless of light/dark theme. */
 .mood-num { font-size: 9px; line-height: 1; color: var(--muted); font-variant-numeric: tabular-nums; }
@@ -318,3 +513,154 @@ input, textarea { font: inherit; color: inherit; }
 .mood-cell.blank { border: none; background: transparent; pointer-events: none; }
 .mood-cell.is-today { border-color: var(--accent); border-width: 2px; }
 .mood-cell.selected { box-shadow: 0 0 0 2px var(--accent); }
+
+/* --- Notetaker ----------------------------------------------------------- */
+
+.nb-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.nb-count { color: var(--muted); font-size: 13px; }
+.nb-new {
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: var(--radius);
+  padding: 8px 14px;
+  font-size: 14px;
+}
+.nb-new:hover { opacity: 0.9; }
+
+.nb-list { list-style: none; margin: 0; padding: 0; }
+.nb-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "title date" "snippet date";
+  gap: 2px 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+.nb-item:hover { border-color: var(--muted); }
+.nb-item-title { grid-area: title; font-weight: 600; }
+.nb-item-snippet {
+  grid-area: snippet;
+  color: var(--muted);
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.nb-item-snippet.empty { font-style: italic; opacity: 0.7; }
+.nb-item-date {
+  grid-area: date;
+  align-self: center;
+  color: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.nb-edit-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.nb-back {
+  background: none;
+  border: none;
+  color: var(--muted);
+  padding: 0;
+  font-size: 14px;
+}
+.nb-back:hover { color: var(--ink); }
+.nb-del {
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: var(--radius);
+  padding: 5px 12px;
+  font-size: 13px;
+}
+.nb-del:hover { color: #ef4444; border-color: #ef4444; }
+
+.nb-title {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  font-size: 18px;
+  font-weight: 600;
+  outline: none;
+  margin-bottom: 10px;
+}
+.nb-title:focus { border-color: var(--muted); }
+.nb-body {
+  width: 100%;
+  min-height: 50vh;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px;
+  font-size: 15px;
+  line-height: 1.6;
+  resize: vertical;
+  outline: none;
+}
+.nb-body:focus { border-color: var(--muted); }
+
+.nb-edit-btn {
+  background: var(--accent);
+  color: var(--bg);
+  border: none;
+  border-radius: var(--radius);
+  padding: 5px 14px;
+  font-size: 13px;
+}
+.nb-edit-btn:hover { opacity: 0.9; }
+.nb-read-title { margin: 4px 0 12px; font-size: 22px; font-weight: 600; }
+
+/* Rendered Markdown (read view) */
+.md { line-height: 1.65; }
+.md h1, .md h2, .md h3, .md h4 { margin: 18px 0 8px; line-height: 1.3; }
+.md h1 { font-size: 1.5em; }
+.md h2 { font-size: 1.3em; }
+.md h3 { font-size: 1.15em; }
+.md h4 { font-size: 1em; }
+.md p { margin: 10px 0; }
+.md ul, .md ol { margin: 10px 0; padding-left: 22px; }
+.md li { margin: 3px 0; }
+.md a { color: #2563eb; }
+.md code {
+  background: var(--line);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+}
+.md pre {
+  background: var(--line);
+  border-radius: var(--radius);
+  padding: 12px;
+  overflow-x: auto;
+}
+.md pre code { background: none; padding: 0; }
+.md blockquote {
+  margin: 10px 0;
+  padding: 2px 14px;
+  border-left: 3px solid var(--line);
+  color: var(--muted);
+}
+.md hr { border: none; border-top: 1px solid var(--line); margin: 18px 0; }
+
+/* Task checkboxes inside rendered Markdown */
+.md-tasks { list-style: none; padding-left: 4px; }
+.md-task { display: flex; align-items: flex-start; gap: 8px; }
+.md-check { margin-top: 4px; accent-color: var(--accent); cursor: pointer; flex: none; }

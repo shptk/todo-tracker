@@ -25,7 +25,11 @@ export interface View {
   destroy(): void;
 }
 
-/** A single task row: checkbox, editable text, delete. */
+/**
+ * A single task row: checkbox, editable text, and an expandable description.
+ * Clicking anywhere on the bar — except the checkbox, delete, or the inline
+ * text editor — toggles the description box. Double-clicking the title edits it.
+ */
 function taskRow(task: Task): HTMLElement {
   const checkbox = el("input", {
     type: "checkbox",
@@ -39,7 +43,32 @@ function taskRow(task: Task): HTMLElement {
     title: "Double-click to edit",
   }, [task.text]);
 
+  // Expandable optional description.
+  const descWrap = el("div", { class: "task-desc-wrap" }) as HTMLDivElement;
+  descWrap.hidden = true;
+  const descArea = el("textarea", {
+    class: "task-desc",
+    placeholder: "Add a description… (Enter to save, Shift+Enter for a new line)",
+    rows: 3,
+  }) as HTMLTextAreaElement;
+  descArea.value = task.desc ?? "";
+
+  // Decorative chevron: rotates when open, darkens when the task has a description.
+  const chevron = el("span", {
+    class: task.desc?.trim() ? "task-expand has-desc" : "task-expand",
+    "aria-hidden": "true",
+  }, ["›"]);
+
+  const setOpen = (open: boolean) => {
+    descWrap.hidden = !open;
+    chevron.classList.toggle("open", open);
+    if (open) descArea.focus();
+  };
+  const toggle = () => setOpen(descWrap.hidden);
+  let pendingToggle: number | undefined;
+
   text.addEventListener("dblclick", () => {
+    window.clearTimeout(pendingToggle); // cancel the single-click expand
     const input = el("input", {
       type: "text",
       class: "task-edit",
@@ -59,6 +88,19 @@ function taskRow(task: Task): HTMLElement {
     input.select();
   });
 
+  descArea.addEventListener("input", () => {
+    store.setTaskDesc(task.id, descArea.value);
+    chevron.classList.toggle("has-desc", descArea.value.trim() !== "");
+  });
+  descArea.addEventListener("keydown", (e) => {
+    const ke = e as KeyboardEvent;
+    if (ke.key === "Enter" && !ke.shiftKey) {
+      ke.preventDefault();
+      setOpen(false); // already autosaved on input
+    }
+  });
+  descWrap.append(descArea);
+
   const del = el("button", {
     class: "task-del",
     title: "Delete",
@@ -66,23 +108,48 @@ function taskRow(task: Task): HTMLElement {
     onClick: () => store.deleteTask(task.id),
   }, ["×"]);
 
-  return el("li", { class: "task" }, [checkbox, text, del]);
+  const row = el("div", { class: "task-row" }, [checkbox, text, chevron, del]);
+  row.addEventListener("click", (e) => {
+    const target = e.target as HTMLElement;
+    // Leave the interactive controls to their own handlers.
+    if (target.closest(".task-check, .task-del, .task-edit")) return;
+    if (target.closest(".task-text")) {
+      // The title supports double-click-to-edit, so delay the toggle briefly
+      // and let a dblclick cancel it (avoids a flash on edit).
+      window.clearTimeout(pendingToggle);
+      pendingToggle = window.setTimeout(toggle, 220);
+    } else {
+      toggle();
+    }
+  });
+
+  return el("li", { class: "task" }, [row, descWrap]);
 }
 
-/** Add-task input bound to a specific day key. */
-function addTaskInput(dateKey: string): HTMLElement {
+/**
+ * Add-task input bound to a specific day key. Wrapped in a <form> so a mobile
+ * keyboard's "Go"/Enter reliably submits (a bare keydown listener is missed by
+ * many soft keyboards). `onAdded` runs just before the store mutation so the
+ * caller can mark which input to refocus after the re-render.
+ */
+function addTaskInput(dateKey: string, onAdded: (key: string) => void): HTMLElement {
+  const form = el("form", { class: "task-add-form" }) as HTMLFormElement;
   const input = el("input", {
     type: "text",
     class: "task-add",
     placeholder: "Add a task…",
+    "data-daykey": dateKey,
+    enterkeyhint: "done",
   }) as HTMLInputElement;
-  input.addEventListener("keydown", (e) => {
-    if ((e as KeyboardEvent).key === "Enter" && input.value.trim()) {
+  form.append(input);
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (input.value.trim()) {
+      onAdded(dateKey);
       store.addTask(dateKey, input.value);
-      input.value = "";
     }
   });
-  return input;
+  return form;
 }
 
 function taskList(dateKey: string): HTMLElement {
@@ -94,6 +161,12 @@ function taskList(dateKey: string): HTMLElement {
 export function createPlanner(): View {
   let sub: Sub = "day";
   let cursor = today();
+  // After adding a task the view re-renders; remember which day's add-input to
+  // refocus so the keyboard stays up for rapid entry (esp. on mobile).
+  let refocusKey: string | null = null;
+  const onAdded = (key: string) => {
+    refocusKey = key;
+  };
 
   const root = el("section", { class: "planner" });
   const subtabs = el("div", { class: "subtabs" });
@@ -150,7 +223,7 @@ export function createPlanner(): View {
     const key = dayKey(cursor);
     body.append(
       el("div", { class: "day-pane" }, [
-        addTaskInput(key),
+        addTaskInput(key, onAdded),
         taskList(key),
         noteEditor("day", key, "Day"),
       ]),
@@ -168,7 +241,7 @@ export function createPlanner(): View {
         el("div", { class: "week-col" }, [
           head,
           taskList(key),
-          addTaskInput(key),
+          addTaskInput(key, onAdded),
         ]),
       );
     }
@@ -217,6 +290,14 @@ export function createPlanner(): View {
     if (sub === "day") renderDay();
     else if (sub === "week") renderWeek();
     else renderMonth();
+
+    if (refocusKey) {
+      const input = body.querySelector<HTMLInputElement>(
+        `.task-add[data-daykey="${refocusKey}"]`,
+      );
+      input?.focus();
+      refocusKey = null;
+    }
   }
 
   const unsubscribe = store.subscribe(render);
