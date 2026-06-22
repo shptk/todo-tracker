@@ -1,48 +1,60 @@
-/* Minimal, calm UI. System fonts, restrained palette, generous whitespace. */
+/* Minimal, calm UI — part of the pathak.uk tools family (blue accent).
+   Dark-first: :root is dark; light is the OS / [data-theme="light"] override.
+   Restrained palette, generous whitespace; minimalism is the point. */
 
 :root {
-  --bg: #fafaf9;
-  --surface: #ffffff;
-  --ink: #1c1917;
-  --muted: #78716c;
-  --line: #e7e5e4;
-  --accent: #1c1917;
-  --radius: 10px;
+  --bg: #11131a;
+  --panel: #181b24;
+  --panel-2: #1f2330;
+  --ink: #e6e9ef;
+  --muted: #8b93a7;
+  --line: #262b39;
+  --accent: #5cc8ff;
+  --accent-dim: #2d7a9e;
+  --radius: 12px;
   --max: 920px;
-  color-scheme: light;
+  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "JetBrains Mono", "Fira Code", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  color-scheme: dark;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #1c1917;
-    --surface: #292524;
-    --ink: #f5f5f4;
-    --muted: #a8a29e;
-    --line: #44403c;
-    --accent: #f5f5f4;
-    color-scheme: dark;
+/* No explicit choice → follow the OS; light values when the OS prefers light. */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    --bg: #f6f8fb;
+    --panel: #ffffff;
+    --panel-2: #eef1f6;
+    --ink: #1b1f27;
+    --muted: #5c6573;
+    --line: #e2e6ec;
+    --accent: #2563eb;
+    --accent-dim: #93b4f5;
+    color-scheme: light;
   }
 }
 
-/* Manual theme (header toggle) overrides the system media query above.
-   With no data-theme attribute, the OS preference applies. */
-:root[data-theme="light"] {
-  --bg: #fafaf9;
-  --surface: #ffffff;
-  --ink: #1c1917;
-  --muted: #78716c;
-  --line: #e7e5e4;
-  --accent: #1c1917;
-  color-scheme: light;
-}
+/* Manual theme (header toggle) overrides the OS preference above. */
 :root[data-theme="dark"] {
-  --bg: #1c1917;
-  --surface: #292524;
-  --ink: #f5f5f4;
-  --muted: #a8a29e;
-  --line: #44403c;
-  --accent: #f5f5f4;
+  --bg: #11131a;
+  --panel: #181b24;
+  --panel-2: #1f2330;
+  --ink: #e6e9ef;
+  --muted: #8b93a7;
+  --line: #262b39;
+  --accent: #5cc8ff;
+  --accent-dim: #2d7a9e;
   color-scheme: dark;
+}
+:root[data-theme="light"] {
+  --bg: #f6f8fb;
+  --panel: #ffffff;
+  --panel-2: #eef1f6;
+  --ink: #1b1f27;
+  --muted: #5c6573;
+  --line: #e2e6ec;
+  --accent: #2563eb;
+  --accent-dim: #93b4f5;
+  color-scheme: light;
 }
 
 * { box-sizing: border-box; }
@@ -51,7 +63,7 @@ html, body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font: 15px/1.5 var(--sans);
 }
 
 button { font: inherit; cursor: pointer; }
@@ -72,6 +84,7 @@ input, textarea { font: inherit; color: inherit; }
 
 .brand {
   margin: 0;
+  font-family: var(--mono);
   font-size: 20px;
   font-weight: 600;
   letter-spacing: -0.01em;
@@ -105,7 +118,7 @@ input, textarea { font: inherit; color: inherit; }
   justify-content: center;
   flex: none;
 }
-.theme-toggle:hover { border-color: var(--muted); }
+.theme-toggle:hover { border-color: var(--accent-dim); }
 
 /* --- Account button + login modal --------------------------------------- */
 
@@ -122,7 +135,7 @@ input, textarea { font: inherit; color: inherit; }
   gap: 6px;
   flex: none;
 }
-.account-btn:hover { border-color: var(--muted); }
+.account-btn:hover { border-color: var(--accent-dim); }
 .account-btn.signed-in { padding: 2px; border-color: transparent; }
 
 .avatar { border-radius: 999px; object-fit: cover; display: inline-block; }
@@ -139,7 +152,7 @@ input, textarea { font: inherit; color: inherit; }
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -148,7 +161,7 @@ input, textarea { font: inherit; color: inherit; }
 }
 .modal-card {
   position: relative;
-  background: var(--surface);
+  background: var(--panel);
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 28px 24px 24px;
@@ -173,7 +186,7 @@ input, textarea { font: inherit; color: inherit; }
 .modal-note {
   color: var(--muted);
   font-size: 13px;
-  background: var(--line);
+  background: var(--panel-2);
   border-radius: var(--radius);
   padding: 10px 12px;
   margin: 0 0 16px;
@@ -253,14 +266,14 @@ input, textarea { font: inherit; color: inherit; }
 .nav { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 8px 0 16px; }
 
 .nav-btn {
-  background: var(--surface);
+  background: var(--panel);
   border: 1px solid var(--line);
   color: var(--ink);
   border-radius: var(--radius);
   padding: 5px 12px;
   line-height: 1;
 }
-.nav-btn:hover { border-color: var(--muted); }
+.nav-btn:hover { border-color: var(--accent-dim); }
 .nav-btn.today { font-size: 13px; }
 .nav-label { color: var(--muted); margin-left: 6px; font-variant-numeric: tabular-nums; }
 
@@ -275,19 +288,19 @@ input, textarea { font: inherit; color: inherit; }
   padding: 5px 14px;
 }
 .subtab:hover { color: var(--ink); }
-.subtab.active { background: var(--surface); border-color: var(--line); color: var(--ink); }
+.subtab.active { background: var(--panel); border-color: var(--line); color: var(--ink); }
 
 /* --- Tasks --------------------------------------------------------------- */
 
 .task-add, .task-edit {
   width: 100%;
-  background: var(--surface);
+  background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 9px 12px;
   outline: none;
 }
-.task-add:focus, .task-edit:focus { border-color: var(--muted); }
+.task-add:focus, .task-edit:focus { border-color: var(--accent); }
 
 .task-list { list-style: none; margin: 10px 0; padding: 0; }
 
@@ -321,7 +334,7 @@ input, textarea { font: inherit; color: inherit; }
 .task-desc-wrap { padding: 6px 0 4px 26px; }
 .task-desc {
   width: 100%;
-  background: var(--surface);
+  background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 8px 10px;
@@ -330,7 +343,7 @@ input, textarea { font: inherit; color: inherit; }
   resize: vertical;
   outline: none;
 }
-.task-desc:focus { border-color: var(--muted); }
+.task-desc:focus { border-color: var(--accent); }
 
 .task-check { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
 .task-text { flex: 1; }
@@ -358,7 +371,7 @@ input, textarea { font: inherit; color: inherit; }
   gap: 8px;
 }
 .week-col {
-  background: var(--surface);
+  background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 8px;
@@ -388,7 +401,7 @@ input, textarea { font: inherit; color: inherit; }
 .month-cell {
   position: relative;
   aspect-ratio: 1 / 1;
-  background: var(--surface);
+  background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   display: flex;
@@ -420,17 +433,17 @@ input, textarea { font: inherit; color: inherit; }
 /* --- Notes --------------------------------------------------------------- */
 
 .note-block { margin-top: 20px; }
-.note-label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+.note-label { display: block; font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
 .note {
   width: 100%;
-  background: var(--surface);
+  background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 10px 12px;
   resize: vertical;
   outline: none;
 }
-.note:focus { border-color: var(--muted); }
+.note:focus { border-color: var(--accent); }
 
 /* --- Mood tracker -------------------------------------------------------- */
 
@@ -480,7 +493,7 @@ input, textarea { font: inherit; color: inherit; }
   aspect-ratio: 1 / 1;
   border: 1px solid var(--line);
   border-radius: 3px;
-  background: var(--surface);
+  background: var(--panel);
   padding: 0;
   display: flex;
   align-items: center;
@@ -502,7 +515,7 @@ input, textarea { font: inherit; color: inherit; }
   aspect-ratio: 1 / 1;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: var(--surface);
+  background: var(--panel);
   padding: 6px;
   display: flex;
   align-items: flex-start;
@@ -543,11 +556,16 @@ input, textarea { font: inherit; color: inherit; }
   padding: 12px 14px;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: var(--surface);
+  background: var(--panel);
   margin-bottom: 8px;
   cursor: pointer;
+  transition: border-color 0.12s, transform 0.12s, box-shadow 0.12s;
 }
-.nb-item:hover { border-color: var(--muted); }
+.nb-item:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px -12px var(--accent);
+}
 .nb-item-title { grid-area: title; font-weight: 600; }
 .nb-item-snippet {
   grid-area: snippet;
@@ -593,7 +611,7 @@ input, textarea { font: inherit; color: inherit; }
 
 .nb-title {
   width: 100%;
-  background: var(--surface);
+  background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 10px 12px;
@@ -602,11 +620,11 @@ input, textarea { font: inherit; color: inherit; }
   outline: none;
   margin-bottom: 10px;
 }
-.nb-title:focus { border-color: var(--muted); }
+.nb-title:focus { border-color: var(--accent); }
 .nb-body {
   width: 100%;
   min-height: 50vh;
-  background: var(--surface);
+  background: var(--panel);
   border: 1px solid var(--line);
   border-radius: var(--radius);
   padding: 12px;
@@ -615,7 +633,7 @@ input, textarea { font: inherit; color: inherit; }
   resize: vertical;
   outline: none;
 }
-.nb-body:focus { border-color: var(--muted); }
+.nb-body:focus { border-color: var(--accent); }
 
 .nb-edit-btn {
   background: var(--accent);
@@ -638,16 +656,16 @@ input, textarea { font: inherit; color: inherit; }
 .md p { margin: 10px 0; }
 .md ul, .md ol { margin: 10px 0; padding-left: 22px; }
 .md li { margin: 3px 0; }
-.md a { color: #2563eb; }
+.md a { color: var(--accent); }
 .md code {
-  background: var(--line);
+  background: var(--panel-2);
   border-radius: 4px;
   padding: 1px 5px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--mono);
   font-size: 0.9em;
 }
 .md pre {
-  background: var(--line);
+  background: var(--panel-2);
   border-radius: var(--radius);
   padding: 12px;
   overflow-x: auto;
