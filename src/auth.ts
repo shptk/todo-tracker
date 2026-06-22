@@ -11,6 +11,7 @@ const CLIENT_ID: string = "154320784701-fh1mvscaqdvttp1a0kk091uisa5m83eb.apps.go
 // is signed in. The app can only ever touch files it creates in the user's Drive.
 const SCOPES = "openid email profile https://www.googleapis.com/auth/drive.file";
 const AUTH_KEY = "todo-tracker:auth";
+const TOKEN_KEY = "todo-tracker:token";
 
 export interface Profile {
   email: string;
@@ -33,6 +34,14 @@ let tokenExpiry = 0;
 let tokenClient: any = null;
 let gisReady: Promise<void> | null = null;
 
+// Cache the short-lived Drive access token across reloads. GIS's OAuth token
+// flow has no hidden-iframe refresh — every acquisition opens a popup that
+// auto-closes once Google confirms the session, so without a cache a page
+// reload would flash that popup every time. The token is scope-limited
+// (drive.file) and expires within ~1h; it lives alongside the rest of this
+// local-first app's localStorage state.
+loadPersistedToken();
+
 function loadPersisted(): AuthState {
   try {
     const raw = localStorage.getItem(AUTH_KEY);
@@ -49,6 +58,34 @@ function loadPersisted(): AuthState {
 function persist(): void {
   if (state.status === "signed-in") localStorage.setItem(AUTH_KEY, JSON.stringify(state.profile));
   else localStorage.removeItem(AUTH_KEY);
+}
+
+function loadPersistedToken(): void {
+  try {
+    const raw = localStorage.getItem(TOKEN_KEY);
+    if (!raw) return;
+    const p = JSON.parse(raw) as { token?: string; expiry?: number };
+    if (p?.token && typeof p.expiry === "number" && Date.now() < p.expiry) {
+      accessToken = p.token;
+      tokenExpiry = p.expiry;
+    } else {
+      localStorage.removeItem(TOKEN_KEY);
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+function persistToken(): void {
+  try {
+    if (accessToken && Date.now() < tokenExpiry) {
+      localStorage.setItem(TOKEN_KEY, JSON.stringify({ token: accessToken, expiry: tokenExpiry }));
+    } else {
+      localStorage.removeItem(TOKEN_KEY);
+    }
+  } catch {
+    /* ignore */
+  }
 }
 
 function set(next: AuthState): void {
@@ -105,6 +142,7 @@ function requestToken(prompt?: string): Promise<string> {
           if (resp?.access_token) {
             accessToken = resp.access_token;
             tokenExpiry = Date.now() + (resp.expires_in ?? 3600) * 1000 - 60_000;
+            persistToken();
             resolve(resp.access_token);
           } else {
             reject(new Error(resp?.error ?? "Authorization failed."));
@@ -144,6 +182,7 @@ export async function signOut(): Promise<void> {
   }
   accessToken = null;
   tokenExpiry = 0;
+  persistToken();
   set({ status: "signed-out", profile: null });
 }
 
