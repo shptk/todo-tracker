@@ -27,26 +27,27 @@ Node is via nvm (v22). Run `nvm use` / source nvm first if `node` isn't found.
 
 ## Deploy
 
-**GitHub Pages** from the public repo `shptk/todo-tracker`, served at
+**GitHub Pages** (public repo `shptk/tracker`) under the account umbrella domain
+`pathak.uk`, fronted by a **Cloudflare Worker** that serves it at
 **`https://tools.pathak.uk/tracker`**.
 
-- Repo is **public** (MIT licensed), so free GitHub Pages applies.
-- CI in `.github/workflows/deploy.yml` builds on push to `main` and deploys via
-  the Pages Actions flow (Node pinned by `.node-version`).
-- The repo's Pages **custom domain is `tools.pathak.uk`**, set via the Pages API
-  (for Actions deploys the domain comes from repo settings, not a CNAME file —
-  there is intentionally no `public/CNAME`). DNS: a `CNAME` record `tools` →
-  `shptk.github.io`. HTTPS provisions automatically.
-- The app is built into the **`/tracker/` subpath**: `vite.config.ts` sets
-  `base: "/tracker/"` and `build.outDir: "dist/tracker"`, and a small plugin
-  emits `dist/index.html` redirecting the bare domain root to `/tracker/`. So
-  the artifact root (`tools.pathak.uk/`) redirects and the app lives at
-  `tools.pathak.uk/tracker/`. Dev/preview also serve under `/tracker/`.
-- This binds the `tools.pathak.uk` subdomain to this one repo; hosting other
-  tools at `tools.pathak.uk/<x>` later would need a dedicated GitHub org whose
-  `*.github.io` carries the `tools.pathak.uk` umbrella.
-- Google OAuth: add `https://tools.pathak.uk` to the client's Authorized
-  JavaScript origins so sign-in works on the deployed site.
+- Repo is **public** (MIT licensed); free GitHub Pages applies. CI in
+  `.github/workflows/deploy.yml` builds on push to `main` (Node pinned by
+  `.node-version`).
+- **No per-repo custom domain** (`cname: null`), so the repo serves under the
+  umbrella at **`https://pathak.uk/tracker/`** (the `pathak.uk` umbrella is set
+  on `shptk.github.io`; project repos serve at `pathak.uk/<repo>`, and this repo
+  is named `tracker`). There is no `public/CNAME`.
+- `vite.config.ts` sets `base: "/tracker/"` (override via `VITE_BASE`, e.g. `/`
+  for a local root preview) with default output, so asset URLs resolve under the
+  `/tracker/` subpath.
+- A **Cloudflare Worker** bound to `tools.pathak.uk` routes by first path segment
+  to the matching umbrella app: `/tracker/* → pathak.uk/tracker/*` (segment ==
+  repo name). Same hub pattern as `learn.pathak.uk` (`/vim`, `/tmux`, `/german`);
+  the Worker also serves the hub landing page. To add a tool: new repo named
+  after the route, `base: "/<route>/"`, no custom domain, add it to the Worker.
+- Google OAuth: the deployed origin is `https://tools.pathak.uk` — add it to the
+  client's Authorized JavaScript origins for sign-in.
 
 ## PWA
 

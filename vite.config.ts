@@ -1,27 +1,17 @@
 import { defineConfig } from "vite";
 import { VitePWA } from "vite-plugin-pwa";
-import { writeFileSync } from "node:fs";
 
-// Served at tools.pathak.uk/tracker via GitHub Pages: the repo's custom domain
-// is tools.pathak.uk, and the app is built into the /tracker/ subpath (base
-// "/tracker/", output to dist/tracker). A generated dist/index.html redirects
-// the bare domain root to /tracker/.
+// Served at tools.pathak.uk/tracker via a Cloudflare Worker that proxies the
+// path to this repo's GitHub Pages umbrella path, pathak.uk/tracker/ (repo is
+// `tracker`, with no per-repo custom domain). The Worker is segment-based
+// (route == repo name), like the vim/tmux apps, so base "/tracker/" makes asset
+// URLs resolve under the /tracker/ subpath. Override with VITE_BASE (e.g. "/"
+// for a local root preview).
+const base = process.env.VITE_BASE ?? "/tracker/";
+
 export default defineConfig({
-  base: "/tracker/",
-  build: { outDir: "dist/tracker" },
+  base,
   plugins: [
-    {
-      // Emit a root redirect so https://tools.pathak.uk/ → /tracker/.
-      name: "tracker-root-redirect",
-      closeBundle() {
-        writeFileSync(
-          "dist/index.html",
-          '<!doctype html><meta charset="utf-8"><title>tracker</title>' +
-            '<meta http-equiv="refresh" content="0; url=/tracker/">' +
-            '<a href="/tracker/">tracker</a>',
-        );
-      },
-    },
     VitePWA({
       registerType: "autoUpdate",
       injectRegister: "auto",
